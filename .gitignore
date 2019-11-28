@@ -1,5 +1,1 @@
-.vscode/
 node_modules/
-config/development.js
-config/env.config.example.js
-config/test.js
