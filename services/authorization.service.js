@@ -60,13 +60,14 @@ class AuthorizationService {
    */
   async login({ username, password }) {
     if (!username || !password) throw 'Отсутствуют необходимые данные или были переданы пустые поля';
-    const user = await this.UserModel.findOne({ username });
+    const user = await this.UserModel.findOne({ where: { username } });
     if (!user) throw { message: 'Пользователь не найден', statusCode: 404 };
     if (password !== AuthorizationUtils.decrypt(user.password)) throw { message: 'Неверный пароль' };
-    const token = jwt.sign({ user_id: user.id }, process.env.SECRET_KEY, { expiresIn: 1800 });
+    const token = jwt.sign({ user_id: user.id }, process.env.SECRET_KEY, { expiresIn: 18000 });
     const refresh_token = tokenGenerator.uid(128);
     await this.RefreshTokenModel.upsert({ user_id: user.id, refresh_token, expiration_time: moment().add(8, 'hours') });
     return {
+      user_id: user.id,
       username: user.username,
       user_image: user.image,
       token,
@@ -87,7 +88,7 @@ class AuthorizationService {
     if (usersRefreshToken.refresh_token !== refresh_token) throw 'Токены не совпадают';
     if (moment().isAfter(usersRefreshToken.expiration_time)) throw 'Время жизни токена истекло';
     return {
-      token: jwt.sign({ user_id }, process.env.SECRET_KEY, { expiresIn: 1800 }),
+      token: jwt.sign({ user_id }, process.env.SECRET_KEY, { expiresIn: 18000 }),
     };
   }
 

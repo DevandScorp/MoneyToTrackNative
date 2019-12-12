@@ -29,6 +29,14 @@ module.exports = (sequelize, DataTypes) => {
         isIn: [[0, 1]],
       },
     },
+    description: {
+      type: DataTypes.STRING,
+      validate: {
+        notEmpty: {
+          msg: 'Должно присутствовать описание',
+        },
+      },
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   });

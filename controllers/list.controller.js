@@ -23,7 +23,14 @@ class ListController {
         user_id, dateFrom, dateTo, path: req.path,
       });
       if (!result) throw 'Данные не найдены';
-      return res.sendRes(result);
+      if (req.path === '/period/pdf') {
+        res.contentType('application/pdf');
+        result.pipe(res);
+        result.on('error', (err) => res.sendErr(err));
+        result.end();
+      } else {
+        return res.sendRes(result);
+      }
     } catch (err) {
       return res.sendErr(err);
     }
@@ -86,6 +93,24 @@ class ListController {
   }
 
   /**
+   * Получение всех элементов всех списков
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {Promise<void>}
+   */
+  static async getListItems(req, res) {
+    try {
+      const { user_id } = req.headers;
+      const result = await listService.getListItems({
+        user_id,
+      });
+      return res.sendRes(result);
+    } catch (err) {
+      return res.sendErr(err);
+    }
+  }
+
+  /**
    * Добавление нового элемента списка
    * @param {object} req - Express request object
    * @param {object} res - Express response object
@@ -95,10 +120,11 @@ class ListController {
     try {
       const { user_id } = req.headers;
       const {
-        list_id, type, amount, name,
+        list_id, type, amount, name, description,
       } = req.body;
+      const date = req.body.date ? new Date(req.body.date) : new Date();
       const result = await listService.addListItem({
-        user_id, list_id, type, amount, name,
+        user_id, list_id, type, amount, name, description, date,
       });
       return res.sendRes(result);
     } catch (err) {

@@ -89,6 +89,15 @@ router.post('/', ListController.addList);
  */
 router.delete('/', ListController.deleteList);
 /**
+ * @name Получение всех элементов всех списков
+ * @memberof! ListRoutes
+ * @path {GET} /api/list/item
+ * @headers {number} user_id - идентификатор пользователя
+ * @code {200} Успешно
+ * @code {500} Ошибка сервера
+ */
+router.get('/item', ListController.getListItems);
+/**
  * @name Создание нового элемента списка
  * @memberof! ListRoutes
  * @path {POST} /api/list/item

@@ -9,7 +9,10 @@
 /* eslint-disable no-throw-literal */
 const moment = require('moment');
 const { Op } = require('sequelize');
+
 const amountTypeEnum = require('../enums/amountType.enum');
+const pdfUtils = require('../utils/pdf.utils');
+
 /**
  * Сервис работы со списками и с их элементами
  */
@@ -35,20 +38,31 @@ class ListService {
     dateTo = moment(dateTo, 'DD.MM.YYYY');
     if (!dateFrom.isValid() || !dateTo.isValid()) throw 'Невалидный формат даты';
     if (dateFrom.isAfter(dateTo)) throw 'Дата с позже, чем дата по';
-    let result = await this.ListItemModel.findAll({
+    const lists = await this.ListModel.findAll({
       where: {
+        user_id,
+      },
+    });
+    let result = lists.length ? await this.ListItemModel.findAll({
+      where: {
+        list_id: {
+          [Op.in]: lists.map(list => list.id),
+        },
         created_at: {
           [Op.gte]: dateFrom.toDate(),
           [Op.lte]: dateTo.set({ hour: 23, minute: 59, second: 59 }).toDate(),
         } },
-      attributes: ['amount', 'type', 'createdAt'],
-    });
+      attributes: ['amount', 'type', 'createdAt', 'name'],
+    }) : [];
     switch (path) {
       case '/period/total':
         let income = 0;
         let expense = 0;
         result.forEach((item) => (item.type === amountTypeEnum.INCOME ? income += item.amount : expense += item.amount));
         result = { income, expense };
+        break;
+      case '/period/pdf':
+        result = pdfUtils.generatePdf(result);
         break;
       default:
         break;
@@ -114,9 +128,11 @@ class ListService {
    * @param {number} param.type - тип элемента ( 0 - доходы, 1 - расходы)
    * @param {number} param.amount - сумма дохода/расхода
    * @param {string} param.name - наименование элемента списка
+   * @param {string} param.description - описание элемента списка
+   * @param {date} param.date - дата создания элемента списка
    */
-  async addListItem({ user_id, list_id, type, amount, name }) {
-    if (!user_id || !name || !amount || !list_id) throw 'Отсутствуют необходимые данные или были переданы пустые поля';
+  async addListItem({ user_id, list_id, type, amount, name, description, date }) {
+    if (!user_id || !name || !amount || !list_id || !description) throw 'Отсутствуют необходимые данные или были переданы пустые поля';
     if (!(await this.ListModel.findOne({ where: { user_id, id: list_id } }))) throw 'Данного списка не существует';
     if (await this.ListItemModel.findOne({ where: { list_id, name } })) throw 'Данный элемент уже присутствует в списке';
     /**
@@ -127,6 +143,8 @@ class ListService {
       list_id,
       type,
       amount,
+      description,
+      createdAt: date,
     });
     /**
      * Обновление суммы у списка
@@ -180,6 +198,24 @@ class ListService {
   }
 
   /**
+   * Получение всех элементов всех списков
+   * @param {object} param - объект запроса
+   * @param {number} param.user_id - идентификатор пользователя
+   */
+  async getListItems({ user_id }) {
+    return await this.ListModel.findAll({
+      where: { user_id },
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        {
+          model: this.ListItemModel,
+          attributes: { exclude: ['updatedAt', 'listId'] },
+        },
+      ],
+    });
+  }
+
+  /**
    * Получение одного или всех списков
    * @param {object} param - объект запроса
    * @param {number} param.user_id - идентификатор пользователя
@@ -194,7 +230,7 @@ class ListService {
         include: [
           {
             model: this.ListItemModel,
-            attributes: { exclude: ['createdAt', 'updatedAt', 'listId'] },
+            attributes: { exclude: ['updatedAt', 'listId'] },
           },
         ],
       });
