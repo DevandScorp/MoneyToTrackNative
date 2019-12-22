@@ -17,10 +17,12 @@
     "fs-extra": "^8.1.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
+    "moment-timezone": "^0.5.27",
     "morgan": "^1.9.1",
     "pdfmake": "^0.1.36",
-    "pg": "^7.11.0",
+    "pg": "^7.15.1",
     "pg-hstore": "^2.3.3",
+    "pg-query-stream": "^2.0.1",
     "rand-token": "^0.4.0",
     "sequelize": "^5.17.1"
   },

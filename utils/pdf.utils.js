@@ -32,11 +32,11 @@ class PdfUtils {
         alignment: 'center',
       },
       {
-        text: item.type === amountTypeEnum.EXPENSE ? -item.amount : item.amount,
+        text: item.amount,
         alignment: 'center',
       },
       {
-        text: moment(item.createdAt).format('DD.MM.YYYY'),
+        text: moment(item.created_at).format('DD.MM.YYYY'),
         alignment: 'center',
       },
     ]);

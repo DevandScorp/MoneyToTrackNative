@@ -2,9 +2,9 @@
 /* eslint-disable camelcase */
 
 const AuthorizationService = require('../services/authorization.service');
-const DatabaseUtils = require('../utils/db.utils');
+const DatabaseRepository = require('../repositories');
 
-const authorizationService = new AuthorizationService(DatabaseUtils.sequelize);
+const authorizationService = new AuthorizationService({ DatabaseRepository });
 
 
 /** Класс работы с авторизацией */

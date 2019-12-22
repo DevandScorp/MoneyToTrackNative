@@ -12,11 +12,11 @@
             "console": "integratedTerminal",
             "env": {
                 "PORT": "3002",
-                "DB_NAME": "moneytotrack",
-                "DB_USER": "postgres",
-                "DB_PASSWORD": "123",
-                "DB_PORT": "5432",
-                "DB_HOST": "localhost",
+                "PGDATABASE": "moneytotrack_native",
+                "PGUSER": "postgres",
+                "PGPASSWORD": "123",
+                "PGPORT": "5432",
+                "PGHOST": "localhost",
                 "SECRET_KEY": "MONEY_TO_TRACK"
             }
         }
